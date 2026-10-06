@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Murmur — kaomoji widget (Citrus · Lemon Soft)</title>
+<style>
+  :root {
+    --ink: #1a1a1a; --lemon: #ffe98a; --sun: #ffd84d; --tomato: #ff5c39; --paper: #fffdf6;
+    --face: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Apple Color Emoji", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 44px 56px 80px; font-family: -apple-system, system-ui, sans-serif; background: #f6f3ea; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  header { display: flex; gap: 22px; align-items: center; max-width: 1080px; margin: 0 auto 30px; }
+  header svg { width: 84px; height: 84px; filter: drop-shadow(0 8px 16px rgb(0 0 0 / .14)); flex: none; }
+  h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: -0.02em; }
+  header p { margin: 0; color: #6f6a5c; }
+
+  /* ---------- desktop stage with the live demo ---------- */
+  .stage {
+    max-width: 1080px; margin: 0 auto 34px; height: 300px; border-radius: 22px; position: relative; overflow: hidden;
+    background: radial-gradient(800px 300px at 20% 0%, #fff3c4, transparent), radial-gradient(700px 300px at 90% 100%, #ffe1d6, transparent), #fffaf0;
+    box-shadow: 0 8px 30px rgb(0 0 0 / .06);
+  }
+  .stage .doc { position: absolute; left: 50%; top: 34px; transform: translateX(-50%); width: 560px; background: #fff; border-radius: 12px; padding: 18px 20px; box-shadow: 0 6px 24px rgb(0 0 0 / .07); font-size: 14px; line-height: 1.5; color: #333; min-height: 120px; }
+  .stage .doc .caret { display: inline-block; width: 2px; height: 1.1em; background: var(--tomato); vertical-align: -2px; animation: blink 1s steps(1) infinite; }
+  .stage .dock { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); height: 54px; width: 420px; border-radius: 18px; background: rgb(255 255 255 / .6); box-shadow: inset 0 0 0 1px rgb(0 0 0 / .06); }
+  .stage .slot { position: absolute; left: 50%; bottom: 74px; transform: translateX(-50%); }
+  .controls { max-width: 1080px; margin: -18px auto 40px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .controls button { font: 600 13px -apple-system, system-ui; border: 0; border-radius: 99px; padding: 10px 16px; background: var(--ink); color: #fff; cursor: pointer; }
+  .controls button.alt { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+  .controls kbd { font: 600 11px ui-monospace, monospace; background: var(--lemon); color: var(--ink); border-radius: 6px; padding: 2px 6px; margin-left: 6px; }
+
+  /* ---------- the widget ---------- */
+  .pill {
+    height: 46px; border-radius: 99px; background: var(--ink); color: #fff; display: inline-flex; align-items: center;
+    padding: 0 18px 0 16px; font-size: 13.5px; font-weight: 550; white-space: nowrap; overflow: visible;
+    box-shadow: 0 8px 0 rgb(0 0 0 / .10), 0 12px 26px rgb(0 0 0 / .12);
+    transition: width .5s cubic-bezier(.34,1.4,.64,1);
+    transform-origin: 50% 100%; will-change: transform, width;
+  }
+  .pill.hidden { visibility: hidden; }
+  .inner { display: inline-flex; align-items: center; gap: 12px; transition: opacity .16s ease; }
+  .txt { display: inline-flex; align-items: center; gap: 8px; }
+  .inner.fading { opacity: 0; }
+  .label { color: #fff; }
+  .muted { color: #bdb8a8; font-weight: 500; }
+  .time { font: 600 11.5px ui-monospace, "SF Mono", monospace; color: var(--sun); font-variant-numeric: tabular-nums; }
+  .chip { font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 99px; background: var(--lemon); color: var(--ink); }
+  .chip.red { background: var(--tomato); color: #fff; }
+  .snip { max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ---------- the character: gentle, slow, alive ---------- */
+  .char { position: relative; height: 40px; display: inline-flex; align-items: center; flex: none; }
+  .body { position: relative; display: inline-flex; align-items: center; font: 600 16px var(--face); color: var(--lemon); letter-spacing: 0;
+          transform-origin: 50% 85%; animation: breathe 3.6s cubic-bezier(.37,0,.63,1) infinite; }
+  .body b { font-weight: 600; display: inline-block; }
+  .lift { display: inline-flex; align-items: center; transition: transform .6s cubic-bezier(.33,1,.68,1); }
+  .feat { display: inline-flex; align-items: center; transition: transform .9s cubic-bezier(.37,0,.63,1); }
+  .eye { transform-origin: 50% 60%; transition: transform .09s ease; }
+  .eye.shut { transform: scaleY(.12); }
+  .eye.shine { position: relative; }
+  .eye.shine::after { content: ""; position: absolute; width: 2.5px; height: 2.5px; border-radius: 50%; background: #fff; top: 6px; right: 2px; opacity: .9; }
+  .paren { margin: 0 1px; }
+  .eye { margin: 0 .5px; }
+  .mouth { margin: 0 .5px; display: inline-block; }
+  .mouth:empty { display: none; }
+  .pen { color: var(--sun); margin-right: 1px; transform-origin: 70% 90%; animation: write 1.6s cubic-bezier(.37,0,.63,1) infinite; }
+  .accent { position: relative; display: inline-block; margin-left: 1px; top: -5px; line-height: 1; font-weight: 700 !important; font-size: 12px !important; font-style: normal; font-size: 10px; color: var(--sun); opacity: 0;
+            transition: opacity 1s ease; }
+  .accent.on { opacity: 1; }
+  .accent.twinkle { animation: twinkle 2.4s cubic-bezier(.37,0,.63,1) infinite; }
+  .accent.drift { animation: drift 3s cubic-bezier(.33,1,.68,1) infinite; color: #bdb8a8; }
+  .looking .feat { animation: look 3.2s cubic-bezier(.37,0,.63,1) infinite; }
+  .tilted .body { transform: rotate(-5deg); animation: none; transition: transform 1.2s cubic-bezier(.33,1,.68,1); }
+
+  /* listening: three tiny capsules (the logo's bars) hear you */
+  .ears { display: none; align-items: center; gap: 3px; margin-left: 8px; height: 18px; }
+  .hearing .ears { display: inline-flex; }
+  .ears span { width: 3px; height: 14px; border-radius: 3px; background: var(--lemon); transform: scaleY(.28); transform-origin: 50% 50%; opacity: .9; }
+  .ears span:nth-child(2) { background: var(--sun); }
+  .ears span:nth-child(3) { background: var(--tomato); }
+  /* polishing: two soft gleams, like light catching something freshly polished */
+  .gleam { position: absolute; font-style: normal; color: var(--sun); opacity: 0; display: none; pointer-events: none; }
+  .gleaming { margin-right: 12px; }
+  .gleaming .gleam { display: block; animation: gleam 2.8s cubic-bezier(.37,0,.63,1) infinite; }
+  .gleam:nth-of-type(1) { right: -11px; top: 5px; font-size: 9px; }
+  .gleam:nth-of-type(2) { right: -4px; top: 22px; font-size: 6px; animation-delay: 1.4s !important; }
+  .sheen { background: linear-gradient(90deg, #bdb8a8 0%, #bdb8a8 35%, #fff8d6 50%, #bdb8a8 65%, #bdb8a8 100%) 0 0 / 240% 100%;
+           -webkit-background-clip: text; background-clip: text; color: transparent; animation: sheen 2.6s cubic-bezier(.37,0,.63,1) infinite; }
+  /* done: a check that draws itself */
+  .tick { width: 13px; height: 13px; margin-left: 2px; flex: none; }
+  .tick path { fill: none; stroke: var(--lemon); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 16; stroke-dashoffset: 16;
+               animation: draw .55s .45s cubic-bezier(.33,1,.68,1) forwards; }
+  .snip.slide { animation: slidein .6s .3s cubic-bezier(.33,1,.68,1) both; }
+  @keyframes gleam { 0%, 100% { opacity: 0; transform: scale(.3) rotate(0deg); } 18% { opacity: 1; transform: scale(1) rotate(25deg); }
+                     40% { opacity: 0; transform: scale(.5) rotate(45deg); } }
+  @keyframes sheen { from { background-position: 100% 0; } to { background-position: -40% 0; } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes slidein { from { opacity: 0; transform: translateX(-6px); } }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(-2.5px); } }
+  @keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.012, 1.03) translateY(-.6px); } }
+  @keyframes write { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg) translateY(-.5px); } }
+  @keyframes look { 0%, 100% { transform: translateX(-1.5px); } 50% { transform: translateX(1.5px); } }
+  @keyframes twinkle { 0%, 100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: scale(1); } }
+  @keyframes drift { 0% { opacity: 0; transform: translate(0, 2px); } 30% { opacity: .9; } 100% { opacity: 0; transform: translate(3px, -7px); } }
+  @media (prefers-reduced-motion: reduce) { .body, .pen, .accent, .looking .feat, .gleam, .sheen, .tick path, .snip.slide { animation: none; } .tick path { stroke-dashoffset: 0; } }
+
+  /* ---------- state gallery ---------- */
+  .gallery { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .state { background: #fff; border-radius: 18px; padding: 20px 22px; box-shadow: 0 6px 24px rgb(0 0 0 / .05); }
+  .state h3 { margin: 0 0 2px; font-size: 15px; }
+  .state p { margin: 0 0 14px; color: #77715f; font-size: 12.5px; }
+  .state .bed { display: flex; justify-content: center; padding: 18px; border-radius: 14px; background: linear-gradient(135deg, #fff6cf, #fffdf6); }
+
+  @keyframes pop { from { transform: translateY(10px) scale(.8); opacity: 0; } }
+  @keyframes float { to { transform: translate(10px, -26px); opacity: 0; } }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+<header>
+  <svg viewBox="0 0 1024 1024"><defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4c2"/><stop offset="1" stop-color="#ffe98a"/></linearGradient></defs>
+    <rect x="40" y="40" width="944" height="944" rx="212" fill="url(#tile)"/>
+    <g transform="translate(512 512) scale(0.86) translate(-512 -512) translate(-9 0)" fill="#1a1a1a">
+      <rect x="240" y="362" width="120" height="300" rx="60"/><rect x="384" y="252" width="120" height="520" rx="60"/>
+      <rect x="528" y="312" width="120" height="194" rx="60"/><rect x="528" y="518" width="120" height="164" rx="60"/>
+      <rect x="698" y="282" width="48" height="460" rx="24" fill="#ff5c39"/></g></svg>
+  <div><h1>Murmur, with a face</h1>
+  <p>Citrus theme · Lemon Soft icon · kaomoji widget. Hold <b>⌃ Control + ⇧ Shift</b> on this page (or use the buttons) to try it.</p></div>
+</header>
+
+<div class="stage">
+  <div class="doc" id="doc">Hey team, <span id="typed"></span><span class="caret"></span></div>
+  <div class="dock"></div>
+  <div class="slot" id="slot"></div>
+</div>
+<div class="controls">
+  <button id="bDictate">Dictate<kbd>⌃⇧</kbd></button>
+  <button id="bPolish" class="alt">Polish<kbd>⌃⌥</kbd></button>
+  <button id="bSilence" class="alt">Say nothing</button>
+  <button id="bAccess" class="alt">No permission yet</button>
+</div>
+
+<section class="gallery" id="gallery"></section>
+
+<script>
+// ============ looks: one calm face per state ============
+const LOOKS = {
+  listening: { eyes: "•", mouth: "ᴗ", cls: "hearing" },
+  thinking:  { eyes: "•", mouth: "", pen: true, cls: "looking" },
+  polishing: { eyes: "˘", mouth: "ᴗ", cls: "gleaming" },
+  done:      { eyes: "•", mouth: "‿", blinks: false, smile: true },
+  error:     { eyes: "•", mouth: "_", accent: "?", cls: "tilted" },
+  access:    { eyes: "•", mouth: "ᴖ", shine: true },
+  loading:   { eyes: "–", mouth: "ω", accent: "z", accentCls: "drift", blinks: false },
+};
+const TEXT = {
+  listening: () => `<span class="label">Listening</span><span class="time" data-time>0:00</span>`,
+  thinking:  () => `<span class="muted">writing it down</span>`,
+  polishing: () => `<span class="sheen">polishing</span>`,
+  done:      (o) => `<svg class="tick" viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5"/></svg><span class="snip slide">${o.text ?? "Let's meet at four to review the launch plan."}</span>`,
+  error:     () => `<span class="muted">didn't catch that</span>`,
+  access:    () => `<span class="label">may I come in?</span><span class="chip red">Accessibility</span>`,
+  loading:   () => `<span class="muted">waking up</span>`,
+};
+const STATES = {
+  listening: { title: "Listening", desc: "Quietly attentive: three tiny bars (the logo's) rise with your voice, the head leans in a touch." },
+  thinking:  { title: "Transcribing", desc: "Eyes drift slowly along the line while the pen φ writes." },
+  polishing: { title: "Polishing", desc: "Calm, eyes softly closed, humming along; two little gleams catch the light, like something freshly polished." },
+  done:      { title: "Done", desc: "A beat, then the eyes close into a smile ^‿^, one slow bob, a check draws itself." },
+  error:     { title: "Didn't catch that", desc: "A slow head tilt with a small ? tucked against the face. Never alarming." },
+  access:    { title: "Needs permission", desc: "Hopeful eyes with a glint; a small, polite ask." },
+  loading:   { title: "Waking up", desc: "Asleep, breathing; a single z drifts up." },
+};
+const rand = (a, b) => a + Math.random() * (b - a);
+
+class Character {
+  constructor(host) {
+    host.innerHTML = `<span class="char"><span class="body"><span class="lift">
+        <b class="pen"></b><b class="paren">(</b><span class="feat"><b class="eye l"></b><b class="mouth"></b><b class="eye r"></b></span><b class="paren">)</b><i class="accent"></i>
+      </span><i class="gleam">✦</i><i class="gleam">✦</i></span><span class="ears"><span></span><span></span><span></span></span></span>`;
+    const q = (c) => host.querySelector(c);
+    this.ears = [...host.querySelectorAll(".ears span")]; this.bars = [0, 0, 0];
+    Object.assign(this, { root: q(".char"), lift: q(".lift"), pen: q(".pen"), eyes: [q(".eye.l"), q(".eye.r")], mouth: q(".mouth"), accent: q(".accent") });
+    this.blinkTimer = 0; this.state = null; this.mouthLevel = 0;
+  }
+  play(state) {
+    const L = LOOKS[state]; this.state = state; this.mouthLevel = 0;
+    this.root.className = "char " + (L.cls ?? "");
+    this.pen.textContent = L.pen ? "φ" : ""; this.pen.style.display = L.pen ? "" : "none";
+    this.eyes.forEach(e => { e.textContent = L.eyes; e.classList.toggle("shine", !!L.shine); e.classList.remove("shut"); });
+    this.mouth.textContent = L.mouth;
+    this.accent.textContent = L.accent ?? ""; this.accent.className = "accent";
+    if (L.accent) setTimeout(() => this.accent.classList.add("on", ...(L.accentCls ? [L.accentCls] : [])), 500);
+    this.lift.style.transform = "translateY(0)";
+    if (L.lift) requestAnimationFrame(() => (this.lift.style.transform = "translateY(-2px)"));
+    clearTimeout(this.blinkTimer); clearTimeout(this.smileTimer);
+    this.lift.style.animation = "";
+    if (L.smile) this.smileTimer = setTimeout(() => {           // the satisfying moment
+      this.eyes.forEach(e => e.classList.add("shut"));
+      setTimeout(() => { this.eyes.forEach(e => { e.textContent = "^"; e.classList.remove("shut"); });
+        this.lift.style.animation = "bob .9s cubic-bezier(.37,0,.63,1)"; }, 110);
+    }, 380);
+    if (state === "listening") { this.bars = [0, 0, 0]; this.ears.forEach(b => (b.style.transform = "scaleY(.28)")); }
+    if (L.blinks !== false) this.scheduleBlink(rand(900, 1800));
+  }
+  scheduleBlink(ms) {
+    this.blinkTimer = setTimeout(() => {
+      const twice = Math.random() < .12;
+      this.blink(); if (twice) setTimeout(() => this.blink(), 260);
+      this.scheduleBlink(rand(2800, 5200));
+    }, ms);
+  }
+  blink() { this.eyes.forEach(e => e.classList.add("shut")); setTimeout(() => this.eyes.forEach(e => e.classList.remove("shut")), 130); }
+  stop() { clearTimeout(this.blinkTimer); }
+  // listening: small, soft responses to the voice
+  voice(level, now = performance.now()) {
+    if (this.state !== "listening") return;
+    // three capsules, each with its own gentle phase, eased toward the voice
+    this.ears.forEach((bar, i) => {
+      const wobble = 0.75 + 0.25 * Math.sin(now / (260 + i * 70) + i * 1.7);
+      const goal = 0.28 + 0.72 * Math.min(1, level * (i === 1 ? 1.25 : 1) * wobble);
+      this.bars[i] += (goal - this.bars[i]) * 0.2;
+      bar.style.transform = `scaleY(${this.bars[i].toFixed(3)})`;
+    });
+    this.lift.style.transform = `rotate(${(level * 3).toFixed(2)}deg) translateY(${(-level * 1).toFixed(2)}px)`; // leans in
+  }
+}
+
+/** The pill: soft fade-and-rise in, gentle width changes, quiet crossfades. */
+class Pill {
+  constructor(host) {
+    this.el = document.createElement("div"); this.el.className = "pill hidden";
+    this.el.innerHTML = `<span class="inner"><span class="slot-char"></span><span class="txt"></span></span>`;
+    host.appendChild(this.el);
+    this.inner = this.el.querySelector(".inner"); this.txt = this.el.querySelector(".txt");
+    this.char = new Character(this.el.querySelector(".slot-char"));
+    this.state = null; this.level = 0; this.target = 0; this.t0 = 0;
+    this.el.style.transition = "width .7s cubic-bezier(.33,1,.68,1)";
+    requestAnimationFrame(this.frame.bind(this));
+  }
+  fit() { this.el.style.width = this.inner.scrollWidth + 28 + "px"; }
+  set(state, o = {}) {
+    const wasHidden = this.el.classList.contains("hidden");
+    if (!state) {
+      if (wasHidden) return;
+      this.state = null; this.char.stop();
+      this.el.animate([{ opacity: 1, transform: "translateY(0) scale(1)" }, { opacity: 0, transform: "translateY(6px) scale(.97)" }],
+        { duration: 420, easing: "cubic-bezier(.32,0,.67,0)" }).onfinish = () => this.el.classList.add("hidden");
+      return;
+    }
+    this.state = state;
+    const fill = () => { this.txt.innerHTML = TEXT[state](o); this.char.play(state); this.fit(); this.inner.classList.remove("fading"); };
+    if (wasHidden) {
+      fill(); this.el.classList.remove("hidden");
+      this.el.animate([{ opacity: 0, transform: "translateY(8px) scale(.96)" }, { opacity: 1, transform: "translateY(0) scale(1)" }],
+        { duration: 520, easing: "cubic-bezier(.33,1,.68,1)" });
+    } else { this.inner.classList.add("fading"); setTimeout(fill, 180); }
+    if (state === "listening") { this.t0 = performance.now(); this.level = this.target = 0; }
+  }
+  voice(v) { this.target = Math.max(this.target, v); }
+  frame(now) {
+    requestAnimationFrame(this.frame.bind(this));
+    if (this.state !== "listening") return;
+    this.level += (this.target - this.level) * (this.target > this.level ? 0.18 : 0.05); // soft attack, slow release
+    this.target *= 0.9;
+    this.char.voice(this.level, now);
+    const t = this.txt.querySelector("[data-time]");
+    if (t) { const s = Math.floor((now - this.t0) / 1000); t.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }
+  }
+}
+
+function fakeVoice(t) {
+  const syll = Math.max(0, Math.sin(t * 8.5)) ** 1.5 * (0.6 + 0.4 * Math.sin(t * 1.3));
+  const phrase = Math.max(0, Math.sin(t * 0.9) + 0.35);
+  return Math.min(1, syll * phrase * 1.6);
+}
+
+// ============ gallery ============
+const gallery = document.getElementById("gallery");
+gallery.innerHTML = Object.entries(STATES).map(([k, s]) =>
+  `<div class="state"><h3>${s.title}</h3><p>${s.desc}</p><div class="bed" data-state="${k}"></div></div>`).join("");
+const galleryPills = [...gallery.querySelectorAll(".bed")].map(bed => { const p = new Pill(bed); p.set(bed.dataset.state); return p; });
+galleryPills.forEach(p => p.state === "done" && setInterval(() => p.char.play("done"), 3600));
+(function feed(now) { galleryPills.forEach(p => p.state === "listening" && p.voice(fakeVoice(now / 1000))); requestAnimationFrame(feed); })(0);
+
+// ============ live demo on the fake desktop ============
+const live = new Pill(document.getElementById("slot"));
+const typed = document.getElementById("typed");
+let mode = "idle", hideTimer;
+function settle(state, o, ms) { mode = "settling"; live.set(state, o); clearTimeout(hideTimer); hideTimer = setTimeout(() => { mode = "idle"; live.set(null); }, ms); }
+function startListening() {
+  if (mode === "listening") return;
+  clearTimeout(hideTimer); mode = "listening"; live.set("listening");
+  const t0 = performance.now();
+  (function v(now) { if (mode !== "listening") return; live.voice(fakeVoice((now - t0) / 1000 + 0.2)); requestAnimationFrame(v); })(t0);
+}
+function stopListening() {
+  if (mode !== "listening") return;
+  mode = "thinking"; live.set("thinking");
+  setTimeout(() => { const text = "can you send me the report by tomorrow? "; typed.textContent += text; settle("done", { text: text.trim() }, 2400); }, 1200);
+}
+function polish() {
+  clearTimeout(hideTimer); mode = "polishing"; live.set("polishing");
+  setTimeout(() => { typed.textContent = "could you send me the report by tomorrow? I need it for the meeting."; settle("done", { text: "Polished" }, 2600); }, 1500);
+}
+document.getElementById("bDictate").onclick = () => { startListening(); setTimeout(stopListening, 3000); };
+document.getElementById("bPolish").onclick = polish;
+document.getElementById("bSilence").onclick = () => settle("error", {}, 2800);
+document.getElementById("bAccess").onclick = () => settle("access", {}, 3200);
+
+let polishArmed = false;
+addEventListener("keydown", e => { if (e.ctrlKey && e.shiftKey && !e.altKey) startListening(); polishArmed = e.ctrlKey && e.altKey && !e.shiftKey; });
+addEventListener("keyup", e => {
+  if (mode === "listening" && (!e.ctrlKey || !e.shiftKey)) stopListening();
+  if (polishArmed && (!e.ctrlKey || !e.altKey)) { polishArmed = false; polish(); }
+});
+</script>
+</body>
+</html>

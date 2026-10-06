@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Murmur banner</title>
+<!-- Renders assets/banner.png from the app's real stylesheet, frozen on each state's resting pose. -->
+<link rel="stylesheet" href="../src/styles.css" />
+<style>
+  html, body { height: auto; overflow: visible; background: transparent; }
+  body { margin: 0; }
+  .stage { width: 1600px; padding: 64px 0 70px; display: flex; flex-direction: column; gap: 26px; align-items: center;
+           background: linear-gradient(135deg, #fff6cf, #fffdf6); }
+  .row { display: flex; gap: 22px; }
+  .stage .pill { position: static; translate: none; width: auto !important; }
+  .stage *, .stage *::before { animation: none !important; transition: none !important; }
+  .stage .tick path { stroke-dashoffset: 0; }
+  .stage .accent { opacity: 1; }
+  .stage .accent.drift { opacity: .9; transform: translate(2px, -3px); }
+  .stage .gleaming .gleam:nth-of-type(1) { opacity: 1; transform: rotate(25deg); }
+  .stage .gleaming .gleam:nth-of-type(2) { opacity: .55; transform: scale(.8); }
+  .stage .sheen { color: #d9d4c3; background: none; }
+  .stage .snip { animation: none; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<script>
+const face = (o) => `
+  <span class="char ${o.cls ?? ""}"><span class="body"><span class="lift" style="${o.lift ?? ""}">
+    <b class="pen">φ</b><b class="paren">(</b><span class="feat"><b class="eye ${o.shine ? "shine" : ""}">${o.eyes}</b><b class="mouth">${o.mouth}</b><b class="eye ${o.shine ? "shine" : ""}">${o.eyes}</b></span><b class="paren">)</b><i class="accent ${o.drift ? "drift" : ""}">${o.accent ?? ""}</i>
+  </span></span><i class="gleam">✦</i><i class="gleam">✦</i>
+  <span class="ears">${(o.ears ?? [0, 0, 0]).map(h => `<span style="transform:scaleY(${h})"></span>`).join("")}</span></span>`;
+const pill = (o, text) => `<div class="pill"><span class="inner">${face(o)}<span class="txt">${text}</span></span></div>`;
+const rows = [
+  [
+    pill({ eyes: "•", mouth: "ᴗ", cls: "hearing", ears: [.55, .95, .4], lift: "transform:rotate(1.6deg) translateY(-.5px)" },
+         `<span class="label">Listening</span><span class="time">0:04</span>`),
+    pill({ eyes: "•", mouth: "", cls: "writing" }, `<span class="muted">writing it down</span>`),
+    pill({ eyes: "˘", mouth: "ᴗ", cls: "gleaming" }, `<span class="sheen">polishing</span>`),
+  ],
+  [
+    pill({ eyes: "^", mouth: "‿" }, `<svg class="tick" viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5"/></svg><span class="snip">Let's meet at four to review the launch plan.</span>`),
+  ],
+  [
+    pill({ eyes: "•", mouth: "_", accent: "?", cls: "tilted" }, `<span class="muted">didn't catch that</span>`),
+    pill({ eyes: "•", mouth: "ᴖ", shine: true }, `<span class="label">may I come in?</span><span class="chip">Accessibility</span>`),
+    pill({ eyes: "–", mouth: "ω", accent: "z", drift: true }, `<span class="muted">waking up</span>`),
+  ],
+];
+document.getElementById("stage").innerHTML = rows.map(r => `<div class="row">${r.join("")}</div>`).join("");
+</script>
+</body>
+</html>

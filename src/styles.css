@@ -1,15 +1,10 @@
-@property --spin {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
 :root {
-  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --c1: #ff6b5a;
-  --c2: #ffb347;
-  --c3: #ff4fa3;
-  --lvl: 0;
+  --ink: #1a1a1a;
+  --lemon: #ffe98a;
+  --sun: #ffd84d;
+  --tomato: #ff5c39;
+  --muted: #bdb8a8;
+  --face: "Hiragino Maru Gothic ProN", "Hiragino Sans", system-ui, sans-serif;
   font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   user-select: none;
@@ -24,214 +19,310 @@ body {
   overflow: hidden;
 }
 
-/* ---------- the capsule ---------- */
-#pill {
+/* ---------- the pill ---------- */
+.pill {
   position: absolute;
   left: 50%;
-  bottom: 10px;
-  width: 46px;
-  height: 8px;
+  bottom: 18px; /* room for the offset shadow; the window itself sits on the Dock */
+  translate: -50% 0;
+  height: 46px;
   border-radius: 99px;
-  transform: translateX(-50%);
-  transition:
-    width 0.55s var(--spring),
-    height 0.55s var(--spring),
-    opacity 0.4s ease,
-    filter 0.4s ease;
-  filter: drop-shadow(0 6px 18px rgb(0 0 0 / 0.45));
-}
-
-.rim {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: conic-gradient(from var(--spin), var(--c1), var(--c2), var(--c3), var(--c1));
-  opacity: 0.9;
-  animation: spin 3.2s linear infinite;
-  transition: opacity 0.4s ease;
-}
-
-.core {
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  background:
-    radial-gradient(120% 140% at 50% 120%, color-mix(in srgb, var(--c1) 22%, transparent), transparent 60%),
-    linear-gradient(180deg, #1b1a1f, #0b0b0e);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
-  display: flex;
+  background: var(--ink);
+  color: #fff;
+  display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 0 13px;
-  overflow: hidden;
-}
-
-/* ---------- parts ---------- */
-.ember,
-#silk,
-.label,
-.clock,
-.check {
-  display: none;
-  flex: none;
-  animation: rise 0.35s var(--spring) both;
-}
-
-.ember {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #fff 0 12%, var(--c1) 45%);
-  box-shadow:
-    0 0 0 calc(2px + var(--lvl) * 6px) color-mix(in srgb, var(--c1) 28%, transparent),
-    0 0 14px var(--c1);
-  transition: box-shadow 0.08s linear;
-}
-
-#silk {
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-}
-
-.label {
-  color: #f3f1f6;
-  font-size: 12.5px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  padding: 0 18px 0 16px;
+  font-size: 13.5px;
+  font-weight: 550;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-  flex: 1;
+  box-shadow:
+    0 6px 0 rgb(0 0 0 / 0.1),
+    0 10px 22px rgb(0 0 0 / 0.16);
+  transition: width 0.7s cubic-bezier(0.33, 1, 0.68, 1);
 }
-
-.clock {
-  font: 500 11px ui-monospace, "SF Mono", monospace;
-  color: color-mix(in srgb, var(--c2) 70%, white);
+.pill.hidden {
+  visibility: hidden;
+}
+.inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transition: opacity 0.16s ease;
+}
+.inner.fading {
+  opacity: 0;
+}
+.txt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.label {
+  color: #fff;
+}
+.muted {
+  color: var(--muted);
+  font-weight: 500;
+}
+.time {
+  font: 600 11.5px ui-monospace, "SF Mono", monospace;
+  color: var(--sun);
   font-variant-numeric: tabular-nums;
 }
+.chip {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: var(--tomato);
+  color: #fff;
+}
+.snip {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: slidein 0.6s 0.3s cubic-bezier(0.33, 1, 0.68, 1) both;
+}
 
-.check {
-  width: 15px;
-  height: 15px;
+/* ---------- the face: gentle, slow, alive ---------- */
+.char {
+  position: relative;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+}
+.body {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font: 600 16px var(--face);
+  color: var(--lemon);
+  transform-origin: 50% 85%;
+  animation: breathe 3.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+}
+.body b {
+  font-weight: 600;
+  display: inline-block;
+}
+.lift {
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+}
+.feat {
+  display: inline-flex;
+  align-items: center;
+}
+.paren {
+  margin: 0 1px;
+}
+.eye {
+  margin: 0 0.5px;
+  transform-origin: 50% 60%;
+  transition: transform 0.09s ease;
+}
+.eye.shut {
+  transform: scaleY(0.12);
+}
+.eye.shine {
+  position: relative;
+}
+.eye.shine::after {
+  content: "";
+  position: absolute;
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 50%;
+  background: #fff;
+  top: 6px;
+  right: 2px;
+  opacity: 0.9;
+}
+.mouth {
+  margin: 0 0.5px;
+}
+.mouth:empty {
+  display: none;
+}
+.body .pen {
+  display: none; /* beats `.body b`, which would otherwise show the pen on every face */
+  color: var(--sun);
+  margin-right: 1px;
+  transform-origin: 70% 90%;
+  animation: write 1.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+}
+.writing .body .pen {
+  display: inline-block;
+}
+.writing .feat {
+  animation: look 3.2s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+}
+.accent {
+  position: relative;
+  display: inline-block;
+  margin-left: 1px;
+  top: -5px;
+  line-height: 1;
+  font: 700 12px var(--face);
+  font-style: normal;
+  color: var(--sun);
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+.accent.on {
+  opacity: 1;
+}
+.accent.drift {
+  animation: drift 3s cubic-bezier(0.33, 1, 0.68, 1) infinite;
+  color: var(--muted);
+  font-size: 10px;
+}
+.tilted .body {
+  transform: rotate(-5deg);
+  animation: none;
+  transition: transform 1.2s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* listening: three tiny capsules (the logo's bars) hear you */
+.ears {
+  display: none;
+  align-items: center;
+  gap: 3px;
+  margin-left: 8px;
+  height: 18px;
+}
+.hearing .ears {
+  display: inline-flex;
+}
+.ears span {
+  width: 3px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--lemon);
+  transform: scaleY(0.28);
+  opacity: 0.9;
+}
+.ears span:nth-child(2) {
+  background: var(--sun);
+}
+.ears span:nth-child(3) {
+  background: var(--tomato);
+}
+
+/* polishing: two soft gleams, like light catching something freshly polished */
+.gleam {
+  position: absolute;
+  font-style: normal;
+  color: var(--sun);
+  opacity: 0;
+  display: none;
+  pointer-events: none;
+}
+.gleaming {
+  margin-right: 12px;
+}
+.gleaming .gleam {
+  display: block;
+  animation: gleam 2.8s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+}
+.gleam:nth-of-type(1) {
+  right: -11px;
+  top: 5px;
+  font-size: 9px;
+}
+.gleam:nth-of-type(2) {
+  right: -4px;
+  top: 22px;
+  font-size: 6px;
+  animation-delay: 1.4s !important;
+}
+.sheen {
+  background: linear-gradient(90deg, var(--muted) 0%, var(--muted) 35%, #fff8d6 50%, var(--muted) 65%, var(--muted) 100%) 0 0 / 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sheen 2.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+}
+
+/* done: a check that draws itself */
+.tick {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+.tick path {
   fill: none;
-  stroke: var(--c1);
+  stroke: var(--lemon);
   stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 16;
   stroke-dashoffset: 16;
+  animation: draw 0.55s 0.45s cubic-bezier(0.33, 1, 0.68, 1) forwards;
 }
 
-/* ---------- states ---------- */
-/* invisible until summoned: shrinks back into a seed and fades out */
-#pill[data-state="idle"],
-#pill[data-state="loading"] {
-  opacity: 0;
-  --c1: #8d8a99;
-  --c2: #4a4855;
-  --c3: #c9c5d6;
-}
-#pill[data-state="idle"] .rim {
-  animation-duration: 9s;
-  opacity: 0.5;
-}
-#pill[data-state="loading"] .rim {
-  animation-duration: 1.2s;
-}
-
-#pill[data-state="listening"] {
-  width: 214px;
-  height: 38px;
-  --c1: #ff6b5a;
-  --c2: #ffb347;
-  --c3: #ff4fa3;
-}
-#pill[data-state="listening"] :is(.ember, #silk, .clock) {
-  display: block;
-}
-
-#pill[data-state="thinking"] {
-  width: 168px;
-  height: 38px;
-  --c1: #5ee7ff;
-  --c2: #7cffc4;
-  --c3: #6b8cff;
-}
-#pill[data-state="polishing"] {
-  width: 168px;
-  height: 38px;
-  --c1: #b38cff;
-  --c2: #ff9cf0;
-  --c3: #7c6bff;
-}
-#pill:is([data-state="thinking"], [data-state="polishing"]) #silk {
-  display: block;
-  flex: 0 0 54px;
-}
-#pill:is([data-state="thinking"], [data-state="polishing"]) .label {
-  display: block;
-  background: linear-gradient(90deg, #8f8a9c 0%, #fff 45%, #8f8a9c 70%) 0 0 / 220% 100%;
-  -webkit-background-clip: text;
-  color: transparent;
-  animation:
-    rise 0.35s var(--spring) both,
-    sheen 1.6s linear infinite;
-}
-
-#pill[data-state="done"] {
-  width: 264px;
-  height: 38px;
-  --c1: #7cffc4;
-  --c2: #5ee7ff;
-  --c3: #b5ff7c;
-}
-#pill[data-state="done"] :is(.check, .label) {
-  display: block;
-}
-#pill[data-state="done"] .check {
-  animation: draw 0.45s 0.1s ease-out forwards;
-}
-#pill[data-state="done"] .rim {
-  animation-duration: 1.4s;
-}
-
-#pill:is([data-state="error"], [data-state="access"]) {
-  width: 236px;
-  height: 38px;
-  --c1: #ff5a6e;
-  --c2: #ff8a5a;
-  --c3: #ff3d8b;
-}
-#pill[data-state="access"] {
-  width: 284px;
-  --c1: #ffc247;
-  --c2: #ff8a3d;
-  --c3: #ffe08a;
-}
-#pill:is([data-state="error"], [data-state="access"]) :is(.ember, .label) {
-  display: block;
-}
-#pill[data-state="error"] {
-  animation: shake 0.42s ease;
-}
-
-/* ---------- motion ---------- */
-@keyframes spin {
-  to {
-    --spin: 360deg;
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.012, 1.03) translateY(-0.6px);
   }
 }
-@keyframes rise {
-  from {
+@keyframes write {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg) translateY(-0.5px);
+  }
+}
+@keyframes look {
+  0%,
+  100% {
+    transform: translateX(-1.5px);
+  }
+  50% {
+    transform: translateX(1.5px);
+  }
+}
+@keyframes drift {
+  0% {
     opacity: 0;
-    transform: translateY(6px) scale(0.9);
+    transform: translate(0, 2px);
+  }
+  30% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(3px, -7px);
+  }
+}
+@keyframes gleam {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.3) rotate(0deg);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1) rotate(25deg);
+  }
+  40% {
+    opacity: 0;
+    transform: scale(0.5) rotate(45deg);
   }
 }
 @keyframes sheen {
+  from {
+    background-position: 100% 0;
+  }
   to {
-    background-position: -220% 0;
+    background-position: -40% 0;
   }
 }
 @keyframes draw {
@@ -239,22 +330,37 @@ body {
     stroke-dashoffset: 0;
   }
 }
-@keyframes shake {
-  20%,
-  60% {
-    transform: translateX(calc(-50% - 5px));
+@keyframes slidein {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
   }
-  40%,
-  80% {
-    transform: translateX(calc(-50% + 5px));
+}
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  45% {
+    transform: translateY(-2.5px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rim {
+  .body,
+  .pen,
+  .accent,
+  .writing .feat,
+  .gleam,
+  .sheen,
+  .snip {
     animation: none;
   }
-  #pill {
-    transition-duration: 0.01s;
+  .tick path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .pill {
+    transition: none;
   }
 }
