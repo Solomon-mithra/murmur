@@ -197,11 +197,12 @@ body {
 }
 .ears span {
   width: 3px;
-  height: 14px;
+  height: 16px;
   border-radius: 3px;
   background: var(--lemon);
-  transform: scaleY(0.28);
+  transform: scaleY(0.22);
   opacity: 0.9;
+  transition: transform 0.09s ease-out; /* interpolates between ~33 mic readings per second */
 }
 .ears span:nth-child(2) {
   background: var(--sun);

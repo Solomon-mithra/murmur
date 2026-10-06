@@ -39,7 +39,7 @@ const ears = [...document.querySelectorAll<HTMLElement>(".ears span")];
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 let state: State = "idle";
 let blinkTimer = 0, smileTimer = 0, settleTimer = 0, accentTimer = 0;
-let level = 0, target = 0, started = 0;
+let level = 0, started = 0;
 const bars = [0, 0, 0];
 
 function blink() {
@@ -103,8 +103,9 @@ function set(next: State, text = "") {
 
   if (next === "listening") {
     started = performance.now();
-    level = target = 0;
-    bars.fill(0);
+    level = 0;
+    bars.fill(0.22);
+    ears.forEach((b) => (b.style.transform = ""));
   }
   if (wasHidden) {
     dress(next, text);
@@ -120,31 +121,32 @@ function set(next: State, text = "") {
   if (next === "done" || next === "error") settleTimer = window.setTimeout(() => set("idle"), next === "done" ? 2200 : 2600);
 }
 
-// listening: soft responses to the real microphone level
-function frame(now: number) {
-  requestAnimationFrame(frame);
+// listening: driven straight from each mic reading (~33/s), not requestAnimationFrame,
+// because WebKit throttles rAF in a window that never becomes key.
+const dbLevel = (rms: number) => Math.min(1, Math.max(0, (20 * Math.log10(rms + 1e-9) + 55) / 30)); // -55 dB → 0, -25 dB → 1
+
+function hear(rms: number) {
   if (state !== "listening") return;
-  level += (target - level) * (target > level ? 0.18 : 0.05); // soft attack, slow release
-  target *= 0.9;
+  const v = dbLevel(rms);
+  level += (v - level) * (v > level ? 0.6 : 0.25); // quick attack, softer release
   ears.forEach((bar, i) => {
-    const wobble = 0.75 + 0.25 * Math.sin(now / (260 + i * 70) + i * 1.7);
-    const goal = 0.28 + 0.72 * Math.min(1, level * (i === 1 ? 1.25 : 1) * wobble);
-    bars[i] += (goal - bars[i]) * 0.2;
+    const jitter = 0.65 + Math.random() * 0.6; // each bar dances on its own
+    const goal = 0.22 + 0.78 * Math.min(1, level * jitter * (i === 1 ? 1.15 : 1));
+    bars[i] += (goal - bars[i]) * 0.7;
     bar.style.transform = `scaleY(${bars[i].toFixed(3)})`;
   });
   lift.style.transform = `rotate(${(level * 3).toFixed(2)}deg) translateY(${(-level).toFixed(2)}px)`; // leans in
-  const t = txt.querySelector("[data-time]");
-  if (t) {
-    const s = Math.floor((now - started) / 1000);
-    t.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-  }
 }
-requestAnimationFrame(frame);
+
+setInterval(() => {
+  const t = state === "listening" && txt.querySelector("[data-time]");
+  if (!t) return;
+  const s = Math.floor((performance.now() - started) / 1000);
+  t.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}, 250);
 
 listen<[State, string]>("state", (e) => set(...e.payload));
-listen<number>("level", (e) => {
-  target = Math.max(target, Math.min(1, Math.sqrt(e.payload) * 2.4));
-});
+listen<number>("level", (e) => hear(e.payload));
 
 // dev-only: drive states from the browser console / preview
-if (import.meta.env.DEV) Object.assign(window, { set, mic: (v: number) => (target = v) });
+if (import.meta.env.DEV) Object.assign(window, { set, hear });
