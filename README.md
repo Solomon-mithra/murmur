@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon.png" width="128" alt="Murmur icon" />
+  <img src="assets/murmur-icon.png" width="128" alt="Murmur icon" />
 </p>
 
 <h1 align="center">Murmur</h1>
@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/banner.png" alt="Murmur's widget in each of its states: listening, writing it down, polishing, done, didn't catch that, may I come in, waking up" />
+  <img src="assets/murmur-states.png" alt="Murmur's widget in each of its states: listening, writing it down, polishing, done, didn't catch that, may I come in, waking up" />
 </p>
 
 ---
@@ -125,7 +125,7 @@ src-tauri/src/
   lib.rs              state machine, clipboard, overlay panel, menu bar
 design/
   kaomoji.html        playground for the face; hold ⌃⇧ on the page
-  banner.html         renders assets/banner.png from the real stylesheet
+  banner.html         renders assets/murmur-states.png from the real stylesheet
 ```
 
 ## Build from source
