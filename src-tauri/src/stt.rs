@@ -46,8 +46,10 @@ pub fn transcribe(pcm: &[f32]) -> Result<String> {
             continue; // <250 ms: nothing worth decoding
         }
         let mut out = vec![0 as c_char; 64 * 1024];
+        // MURMUR_NO_KEYWORDS=1 turns biasing off, for A/B testing with examples/e2e.rs
+        let cues = if std::env::var_os("MURMUR_NO_KEYWORDS").is_some() { std::ptr::null() } else { CUES.as_ptr() };
         let rc = unsafe {
-            needle_transcribe(chunk.as_ptr(), chunk.len() as _, c"en".as_ptr(), CUES.as_ptr(), 0, out.as_mut_ptr(), out.len() as _)
+            needle_transcribe(chunk.as_ptr(), chunk.len() as _, c"en".as_ptr(), cues, 0, out.as_mut_ptr(), out.len() as _)
         };
         if rc < 0 {
             return Err(anyhow!("whistle: {}", last_error()));

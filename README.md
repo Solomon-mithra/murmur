@@ -103,7 +103,9 @@ Speech is cleaned up with simple, predictable rules. There's no AI guessing at w
 Corrections: *no wait · I meant · oh no I meant · sorry I meant · actually no · or rather · scratch that*.
 Structure: *bullet point · next bullet · new line · new paragraph*.
 
-Murmur hands these cue phrases to Whistle as keywords, so it hears "no wait" rather than "no weight". The table above is a test in `cleanup.rs`, so it can't silently go out of date.
+These rules only work when Whistle hears the cue words, and that's the weak spot. Murmur passes the cues to Whistle as keywords, which turns "no weight" back into "no wait" (without it, 7 of 8 test voices misheard it). Even so, in end-to-end tests with 8 synthetic macOS voices, only about half of the example sentences came out exactly right. The misses were all misheard words ("dogs" for "docs"), never the rules misfiring. Say the cue phrases clearly, as their own phrase.
+
+The table above is a test in `cleanup.rs`, so it can't silently go out of date. `examples/e2e.rs` runs any recording through the full dictation path.
 
 ## How it works
 

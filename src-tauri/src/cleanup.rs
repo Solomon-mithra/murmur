@@ -11,6 +11,7 @@ const CORRECT: &[&str] = &[
     "oh no i meant", "no no i meant", "no sorry i meant", "sorry i meant", "no wait i meant", "oh wait i meant",
     "actually i meant", "no i meant", "i meant to say", "i meant", "no wait", "oh wait", "sorry no", "actually no",
     "or rather",
+    "no weight", // Whistle's most common mishearing of "no wait"
 ];
 
 /// Spoken structure cues -> markdown-ish structure.
@@ -64,12 +65,17 @@ pub fn tidy(text: &str) -> String {
     let words: Vec<&str> = text.split_whitespace().collect();
     let mut out: Vec<String> = Vec::new();
     let mut i = 0;
+    let mut scratch_end = usize::MAX; // where the last "scratch that" ended
     while i < words.len() {
         let w = words[i];
         if let Some(n) = cue_at(&words, i, SCRATCH) {
-            let start = sentence_start(&out);
-            out.truncate(start);
+            // "scratch that scratch that" (a known Whistle repetition) only scratches once
+            if i != scratch_end {
+                let start = sentence_start(&out);
+                out.truncate(start);
+            }
             i += n;
+            scratch_end = i;
             continue;
         }
         if let Some(n) = cue_at(&words, i, CORRECT) {
@@ -163,6 +169,16 @@ mod tests {
     #[test]
     fn scratch_that_drops_sentence() {
         assert_eq!(tidy("Send it to Bob. Scratch that. Send it to Alice."), "Send it to Alice.");
+    }
+
+    #[test]
+    fn repeated_scratch_only_scratches_once() {
+        assert_eq!(tidy("Send it to Alice. Send it to Bob scratch that scratch that"), "Send it to Alice.");
+    }
+
+    #[test]
+    fn no_weight_is_no_wait() {
+        assert_eq!(tidy("Let's meet at 3, no weight, 4."), "Let's meet at 4.");
     }
 
     #[test]
