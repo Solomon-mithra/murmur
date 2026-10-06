@@ -1,0 +1,18 @@
+<!doctype html>
+<html><head><meta charset="utf-8" />
+<!-- Renders assets/murmur-tagline.png: the tagline on a lemon highlighter stroke, transparent background. -->
+<style>
+  html, body { margin: 0; background: transparent; }
+  .wrap { width: 400px; height: 76px; display: grid; place-items: center; }
+  .mark {
+    position: relative; padding: 4px 14px 6px;
+    font: italic 600 30px -apple-system, "SF Pro Display", system-ui, sans-serif; letter-spacing: -0.01em; color: #1a1a1a;
+  }
+  /* a hand-drawn-ish highlighter stroke: slightly tilted, uneven ends */
+  .mark::before {
+    content: ""; position: absolute; inset: 6px -2px 2px -4px; z-index: -1;
+    background: #ffe98a; border-radius: 10px 16px 12px 18px / 14px 10px 16px 12px;
+    transform: rotate(-1.2deg) skewX(-6deg);
+  }
+</style></head>
+<body><div class="wrap"><span class="mark">If Wispr Flow had a face.</span></div></body></html>

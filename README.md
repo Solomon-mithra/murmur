@@ -5,7 +5,7 @@
 <h1 align="center">Murmur</h1>
 
 <p align="center">
-  <i>If Wispr Flow had a face.</i>
+  <img src="assets/murmur-tagline.png" width="400" alt="If Wispr Flow had a face." />
 </p>
 
 <p align="center">
@@ -130,6 +130,7 @@ src-tauri/src/
 design/
   kaomoji.html        playground for the face; hold ⌃⇧ on the page
   banner.html         renders assets/murmur-states.png from the real stylesheet
+  tagline.html        renders assets/murmur-tagline.png (the highlighted tagline)
 ```
 
 ## Build from source
