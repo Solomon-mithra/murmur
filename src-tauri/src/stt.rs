@@ -33,6 +33,10 @@ pub fn load(path: &Path) -> Result<()> {
 
 const MAX: usize = 30 * 16_000;
 
+/// Spoken cues that cleanup.rs acts on. Whistle's keyword biasing makes it favour
+/// these exact phrases ("no wait", not "no weight"; "scratch that", not "scratched that").
+const CUES: &std::ffi::CStr = c"no wait\nI meant\noh no I meant\nsorry I meant\nactually no\nor rather\nscratch that\nbullet point\nnext bullet\nnew line\nnew paragraph";
+
 /// 16 kHz mono PCM -> text. Not thread-safe: call from one thread only.
 pub fn transcribe(pcm: &[f32]) -> Result<String> {
     // ponytail: hard 30 s windows may split a word at the seam; use needle_stream_transcribe_* if long dictation matters
@@ -43,7 +47,7 @@ pub fn transcribe(pcm: &[f32]) -> Result<String> {
         }
         let mut out = vec![0 as c_char; 64 * 1024];
         let rc = unsafe {
-            needle_transcribe(chunk.as_ptr(), chunk.len() as _, c"en".as_ptr(), std::ptr::null(), 0, out.as_mut_ptr(), out.len() as _)
+            needle_transcribe(chunk.as_ptr(), chunk.len() as _, c"en".as_ptr(), CUES.as_ptr(), 0, out.as_mut_ptr(), out.len() as _)
         };
         if rc < 0 {
             return Err(anyhow!("whistle: {}", last_error()));

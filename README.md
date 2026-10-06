@@ -103,6 +103,8 @@ Speech is cleaned up with simple, predictable rules. There's no AI guessing at w
 Corrections: *no wait · I meant · oh no I meant · sorry I meant · actually no · or rather · scratch that*.
 Structure: *bullet point · next bullet · new line · new paragraph*.
 
+Murmur hands these cue phrases to Whistle as keywords, so it hears "no wait" rather than "no weight". The table above is a test in `cleanup.rs`, so it can't silently go out of date.
+
 ## How it works
 
 ```
@@ -153,6 +155,7 @@ cargo test --lib                                       # chords, cleanup, voice 
 cargo run --release --example dictate                  # cleanup on sample transcripts
 cargo run --release --example rephrase -- "ur text"    # polish one string
 cargo run --release --example transcribe -- clip.wav   # Whistle on a 16 kHz WAV
+cargo run --release --example e2e -- clip.wav          # Whistle + cleanup: exactly what dictation types
 ```
 
 ### Tuning

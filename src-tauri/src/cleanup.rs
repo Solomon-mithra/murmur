@@ -179,3 +179,23 @@ mod tests {
         assert_eq!(tidy(s), s);
     }
 }
+
+/// The examples in README.md, verbatim, so the docs can't drift from the code.
+#[cfg(test)]
+mod readme_examples {
+    use super::tidy;
+
+    #[test]
+    fn readme_table() {
+        let rows = [
+            ("Um, so we should meet at the the office.", "So we should meet at the office."),
+            ("Let's refactor auth. Oh no, I meant let's continue with search.", "Let's continue with search."),
+            ("Let's meet at three, no wait, four.", "Let's meet at four."),
+            ("Send it to Bob. Scratch that. Send it to Alice.", "Send it to Alice."),
+            ("Things to do bullet point fix login bullet point update docs", "Things to do\n- Fix login\n- Update docs"),
+        ];
+        for (said, typed) in rows {
+            assert_eq!(tidy(said), typed, "\n  said: {said}");
+        }
+    }
+}
